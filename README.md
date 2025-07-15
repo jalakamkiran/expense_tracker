@@ -40,7 +40,7 @@ A modern **Flutter-based Personal Expense Tracker** application to manage budget
 ---
 
 📁 Project Structure
-bashlib/
+```
 │
 ├── application/       # Bloc state management
 ├── core/              # Common widgets, constants, services
@@ -50,7 +50,7 @@ bashlib/
 ├── domain/            # Business logic and entities
 ├── presentation/      # UI widgets and screens
 └── main.dart          # Entry point
-
+```
 🧠 Architecture
 This project follows a Clean Architecture + Bloc approach:
 
@@ -61,38 +61,40 @@ Data Layer: Local DB via Drift, file system, and secure storage
 
 
 🛠️ Dependencies
-Package                Purpose
-flutter_bloc           State management
-drift                  Local database
-flutter_screenutil     Responsive layout
-fl_chart               Pie chart visualization
-flutter_secure_storage Secure PIN storage
-local_auth             Biometric 
-authentication         file_picker
-google_fonts          Styling
-flutter_svg            Icons
+| Package                | Purpose                         |
+|------------------------|---------------------------------|
+| `flutter_bloc`         | State management                |
+| `drift`                | Local database                  |
+| `flutter_screenutil`   | Responsive layout               |
+| `fl_chart`             | Pie chart visualization         |
+| `flutter_secure_storage` | Secure PIN storage            |
+| `local_auth`           | Biometric authentication        |
+| `file_picker`          | File selection                  |
+| `google_fonts`         | Styling                         |
+| `flutter_svg`          | Icons                           |
+
 
 🧪 Setup Instructions
 
 Clone the repository:
-bashgit clone https://github.com/your-username/expense_tracker.git
-cd expense_tracker
+```git clone https://github.com/your-username/expense_tracker.git```
+```cd expense_tracker```
 
 Install dependencies:
-bashflutter pub get
+```flutter pub get```
 
 Configure Android permissions
 Add this to android/app/src/main/AndroidManifest.xml:
-xml<uses-permission android:name="android.permission.INTERNET" />
+```xml<uses-permission android:name="android.permission.INTERNET" />```
 
 Run the app:
-bashflutter run
+```bashflutter run```
 
 
 
 📦 Build APK
 To build a release APK:
-bashflutter build apk --release
+```flutter build apk --release```
 
 📝 Notes
 
@@ -103,7 +105,7 @@ Uses IndexedStack and Bloc to manage bottom navigation efficiently.
 
 🚀 Future Improvements
 
-🔒 Passcode or biometric lock for app launch
+🔒 Mutliple wallet support
 ☁️ Sync with cloud (Firebase, Supabase, etc.)
 📱 iOS support
 🌍 Localization & multi-currency support
