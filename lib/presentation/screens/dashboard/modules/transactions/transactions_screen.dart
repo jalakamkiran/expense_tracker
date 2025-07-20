@@ -2,9 +2,12 @@ import 'package:expense_tracker_clean/application/blocs/bottom_nav_bar/bottom_na
 import 'package:expense_tracker_clean/application/blocs/transaction_list/transaction_list_bloc.dart';
 import 'package:expense_tracker_clean/application/blocs/transaction_list/transaction_list_event.dart';
 import 'package:expense_tracker_clean/application/blocs/transaction_list/transaction_list_state.dart';
+import 'package:expense_tracker_clean/core/di/di.dart';
 import 'package:expense_tracker_clean/core/res/app_colors.dart';
 import 'package:expense_tracker_clean/core/res/app_text_styles.dart';
 import 'package:expense_tracker_clean/core/res/res.dart';
+import 'package:expense_tracker_clean/core/utils/app_functions.dart';
+import 'package:expense_tracker_clean/data/datasources/local/app_database.dart';
 import 'package:expense_tracker_clean/presentation/screens/dashboard/modules/home/widgets/month_dropdown.dart';
 import 'package:expense_tracker_clean/presentation/screens/dashboard/modules/home/widgets/transaction_tile.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +16,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../application/blocs/bottom_nav_bar/bottom_nav_bloc.dart';
+import 'widgets/filter_bottom_sheet/filter_bottom_sheet.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -43,11 +47,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext transactionContext) {
     return WillPopScope(
       onWillPop: () async {
-        if(context.read<BottomNavBloc>().state.currentIndex != 0){
-          context.read<BottomNavBloc>().add(const UpdateNavIndex(0));
+        if (transactionContext.read<BottomNavBloc>().state.currentIndex != 0) {
+          transactionContext.read<BottomNavBloc>().add(const UpdateNavIndex(0));
           return false;
         }
         return true; // allow the pop
@@ -62,7 +66,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   selectedMonth: _selectedMonth,
                   onChanged: (val) {
                     setState(() => _selectedMonth = val);
-                    context.read<TransactionListBloc>().add(
+                    transactionContext.read<TransactionListBloc>().add(
                         ResetTransactions(month: val)); // 🔁 Reset with filter
                   },
                 ),
@@ -72,7 +76,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 TextButton(
                   onPressed: () {
                     setState(() => _selectedMonth = null);
-                    context
+                    transactionContext
                         .read<TransactionListBloc>()
                         .add(const ResetTransactions());
                   },
@@ -86,7 +90,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 ),
 
                 SizedBox(width: 8.w),
-                SvgPicture.asset(Res.filter, width: 24.w, height: 24.h),
+                InkWell(
+                  onTap: () async {
+                    await _onFilterTapped(transactionContext);
+                  },
+                  child:
+                      SvgPicture.asset(Res.filter, width: 24.w, height: 24.h),
+                ),
               ],
             ),
           ),
@@ -130,12 +140,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     child: ListView.separated(
                       controller: _controller,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.only(top: 0, left: 16.w, right: 16.w, bottom: 16.h),
+                      padding: EdgeInsets.only(
+                          top: 0, left: 16.w, right: 16.w, bottom: 16.h),
                       itemCount: grouped.length + (state.hasMore ? 1 : 0),
                       separatorBuilder: (_, __) => SizedBox(height: 24.h),
                       itemBuilder: (context, index) {
                         if (index == grouped.length) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
 
                         final date = grouped.keys.elementAt(index);
@@ -181,6 +193,41 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _onFilterTapped(BuildContext transactionContext) async {
+    final db = sl<AppDatabase>();
+    List<Category> categories = await db.categoryDao.getAllCategories();
+    List<Label> labels = await db.labelDao.getAllLabels();
+    if (transactionContext.mounted) {
+      showModalBottomSheet(
+        context: transactionContext,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => BlocProvider.value(
+          value: transactionContext.read<TransactionListBloc>(),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) =>
+                FilterTransactionBottomSheet(
+              categories: categories,
+              labels: labels,
+              onApply: (filterData) {
+                transactionContext
+                    .read<TransactionListBloc>()
+                    .add(FilterTransactions(
+                      filterData: filterData,
+                      month: AppFunctions().computeMonthIndex(
+                          _selectedMonth), // Pass current month
+                    ));
+              },
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   @override

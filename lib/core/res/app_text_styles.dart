@@ -54,6 +54,11 @@ class AppTextStyles {
     fontSize: 16.sp,
   );
 
+  static final body2 = GoogleFonts.inter(
+    fontWeight: FontWeight.w600,
+    fontSize: 16.sp,
+  );
+
   static final body3 = GoogleFonts.inter(
     fontWeight: FontWeight.w500,
     fontSize: 14.sp,

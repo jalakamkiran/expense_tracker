@@ -38,25 +38,33 @@ class IncomeExpenseCards extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(28.r),
         ),
-        child: Row(
-          children: [
-            SvgPicture.asset(icon),
-            SizedBox(width: 12.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            children: [
+              SvgPicture.asset(icon),
+              SizedBox(width: 12.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
                     style: AppTextStyles.body3
-                        .copyWith(color: AppColors.baseLight80)),
-                SizedBox(height: 4.h),
-                Text(AppFunctions().formatRupees(amount),
+                        .copyWith(color: AppColors.baseLight80),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    AppFunctions().formatRupees(amount),
                     style: AppTextStyles.label2
-                        .copyWith(color: AppColors.baseLight80)),
-              ],
-            ),
-          ],
+                        .copyWith(color: AppColors.baseLight80),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 }

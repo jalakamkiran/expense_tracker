@@ -27,6 +27,15 @@ class TransactionCategoryChanged extends AddTransactionEvent {
   List<Object?> get props => [category];
 }
 
+class TransactionLabelChanged extends AddTransactionEvent {
+  final String label;
+
+  const TransactionLabelChanged(this.label);
+
+  @override
+  List<Object?> get props => [label];
+}
+
 class TransactionWalletChanged extends AddTransactionEvent {
   final String wallet;
 
@@ -81,5 +90,11 @@ class TransactionDateChanged extends AddTransactionEvent {
   final DateTime date;
   TransactionDateChanged(this.date);
 }
+
+class LoadCategories extends AddTransactionEvent {}
+
+
+class LoadLabels extends AddTransactionEvent {}
+
 
 

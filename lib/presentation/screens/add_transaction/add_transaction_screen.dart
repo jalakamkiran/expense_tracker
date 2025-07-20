@@ -20,6 +20,8 @@ class AddTransactionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<AddTransactionBloc>().add(LoadCategories());
+    context.read<AddTransactionBloc>().add(LoadLabels());
     return Scaffold(
       backgroundColor: type.color,
       body: BlocListener<AddTransactionBloc, AddTransactionAddState>(
@@ -49,53 +51,59 @@ class AddTransactionScreen extends StatelessWidget {
         child: BlocBuilder<AddTransactionBloc, AddTransactionAddState>(
           builder: (context, state) {
             return SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    OnBoardingAppBar(title: type.label),
-                    SizedBox(height: 59.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Text(
-                        "How much?",
-                        style: AppTextStyles.title2.copyWith(
-                          color: AppColors.baseLight80.withOpacity(0.64),
+              child: RefreshIndicator(
+                onRefresh: ()async{
+                  context.read<AddTransactionBloc>().add(LoadCategories());
+                  context.read<AddTransactionBloc>().add(LoadLabels());
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      OnBoardingAppBar(title: type.label),
+                      SizedBox(height: 59.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Text(
+                          "How much?",
+                          style: AppTextStyles.title2.copyWith(
+                            color: AppColors.baseLight80.withOpacity(0.64),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 13.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            "₹",
-                            style: AppTextStyles.title1.copyWith(
-                              color: AppColors.baseLight80,
-                            ),
-                          ),
-                          Flexible(
-                            child: TextFormField(
-                              onChanged: (value) => _onAmountEdited(value, context),
-                              keyboardType: TextInputType.number,
-                              decoration: _amountTextDecoration(),
+                      SizedBox(height: 13.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "₹",
                               style: AppTextStyles.title1.copyWith(
                                 color: AppColors.baseLight80,
                               ),
                             ),
-                          ),
-                        ],
+                            Flexible(
+                              child: TextFormField(
+                                onChanged: (value) => _onAmountEdited(value, context),
+                                keyboardType: TextInputType.number,
+                                decoration: _amountTextDecoration(),
+                                style: AppTextStyles.title1.copyWith(
+                                  color: AppColors.baseLight80,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      decoration: _formFieldDecoration(),
-                      padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
-                      child: TransactionFormFields(type: type),
-                    ),
-                  ],
+                      Container(
+                        decoration: _formFieldDecoration(),
+                        padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+                        child: TransactionFormFields(type: type),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

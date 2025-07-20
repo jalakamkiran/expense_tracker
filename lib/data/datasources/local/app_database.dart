@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:expense_tracker_clean/data/datasources/local/dao/categories/categories_dao.dart';
+import 'package:expense_tracker_clean/data/datasources/local/dao/labels/label_dao.dart';
+import 'package:expense_tracker_clean/data/datasources/local/tables/labels.dart';
 import 'package:expense_tracker_clean/data/datasources/local/tables/transactions.dart';
 import 'package:expense_tracker_clean/data/datasources/local/tables/wallets.dart';
 import 'package:intl/intl.dart';
@@ -9,12 +12,13 @@ import 'package:path/path.dart' as p;
 
 import 'dao/transaction_dao.dart';
 import 'dao/wallet/wallet_dao.dart';
+import 'tables/categories.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Transactions,Wallets],
-  daos: [TransactionDao,WalletDao],
+  tables: [Transactions,Wallets,Categories,Labels],
+  daos: [TransactionDao,WalletDao,CategoryDao,LabelDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

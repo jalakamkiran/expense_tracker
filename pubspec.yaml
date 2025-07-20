@@ -62,10 +62,12 @@ dependencies:
   printing: ^5.14.2
   flutter_speed_dial: ^7.0.0
   intl:
+  flutter_colorpicker: ^1.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -73,6 +75,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+  drift_dev: ^2.16.0
+  build_runner: ^2.4.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -105,6 +109,7 @@ flutter:
 
     #Transaction page icons
     - assets/images/svg/transactions/filter.svg
+    - assets/images/svg/transactions/trash.svg
 
     #Bottom navigation icons
     - assets/images/svg/bottom_navigation_bar/budget.svg

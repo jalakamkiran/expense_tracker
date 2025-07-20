@@ -13,6 +13,7 @@ class AddTransactionBloc extends Bloc<AddTransactionEvent, AddTransactionAddStat
   AddTransactionBloc() : super(AddTransactionAddState.initial()) {
     on<TransactionAmountChanged>(_onAmountChanged);
     on<TransactionCategoryChanged>(_onCategoryChanged);
+    on<TransactionLabelChanged>(_onTrasactionLabelChanged);
     on<TransactionWalletChanged>(_onWalletChanged);
     on<TransactionDescriptionChanged>(_onDescriptionChanged);
     on<TransactionRepeatToggled>(_onRepeatToggled);
@@ -22,6 +23,8 @@ class AddTransactionBloc extends Bloc<AddTransactionEvent, AddTransactionAddStat
     on<TransactionToWalletChanged>(_onToWalletChanged);
     on<TransactionFromWalletChanged>(_onFromWalletChanged);
     on<TransactionDateChanged>(_onDateChanged);
+    on<LoadCategories>(_onLoadCategories);
+    on<LoadLabels>(_onLoadLabels);
   }
 
   void _onAmountChanged(TransactionAmountChanged event, Emitter<AddTransactionAddState> emit) {
@@ -84,14 +87,15 @@ class AddTransactionBloc extends Bloc<AddTransactionEvent, AddTransactionAddStat
         TransactionsCompanion.insert(
           title: state.description.isEmpty ? "Untitled" : state.description,
           amount: state.amount,
-          category: state.category!,
+          category: state.category,
+          label: state.label ?? "",
           wallet: state.type == TransactionType.transfer
               ? "${state.fromWallet} → ${state.toWallet}"
               : (state.fromWallet ?? state.toWallet ?? "Wallet"),
           type: state.type.label,
           date: state.date,
           description: Value(state.description),
-          attachment: Value(state.attachment?.name),
+          attachment: Value(state.attachment?.path),
           repeat: Value(state.repeat),
         ),
       );
@@ -134,4 +138,37 @@ class AddTransactionBloc extends Bloc<AddTransactionEvent, AddTransactionAddStat
     emit(state.copyWith(date: event.date));
   }
 
+
+  Future<void> _onLoadCategories(
+      LoadCategories event,
+      Emitter<AddTransactionAddState> emit,
+      ) async {
+    try {
+      final db = sl<AppDatabase>();
+      final categories = await db.select(db.categories).get();
+      final names = categories.map((c) => c.name).toList();
+
+      emit(state.copyWith(availableCategories: names));
+    } catch (e) {
+      // log or handle error if needed
+      emit(state.copyWith(errorMessage: "Failed to load categories"));
+    }
+  }
+
+  FutureOr<void> _onLoadLabels(LoadLabels event, Emitter<AddTransactionAddState> emit) async{
+    try {
+      final db = sl<AppDatabase>();
+      final labels = await db.select(db.labels).get();
+      final names = labels.map((c) => c.name).toList();
+
+      emit(state.copyWith(availableLabels: names));
+    } catch (e) {
+      // log or handle error if needed
+      emit(state.copyWith(errorMessage: "Failed to load labels"));
+    }
+  }
+
+  FutureOr<void> _onTrasactionLabelChanged(TransactionLabelChanged event, Emitter<AddTransactionAddState> emit) {
+    emit(state.copyWith(label: event.label));
+  }
 }

@@ -2,9 +2,11 @@ import 'package:expense_tracker_clean/core/enums/transaction_category.dart';
 import 'package:expense_tracker_clean/core/res/app_colors.dart';
 import 'package:expense_tracker_clean/core/res/app_text_styles.dart';
 import 'package:expense_tracker_clean/core/res/res.dart';
+import 'package:expense_tracker_clean/core/routes/routes.dart';
 import 'package:expense_tracker_clean/core/utils/app_functions.dart';
 import 'package:expense_tracker_clean/data/datasources/local/app_database.dart';
 import 'package:expense_tracker_clean/domain/entities/transaction_entity.dart';
+import 'package:expense_tracker_clean/presentation/screens/dashboard/modules/home/widgets/adaptive_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -33,71 +35,83 @@ class TransactionTile extends StatelessWidget {
     final dateFormat = DateFormat('hh:mm a');
     final formattedTime = dateFormat.format(transaction.date);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.baseLight80,
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      margin: EdgeInsets.symmetric(vertical: 4.h),
-      padding: EdgeInsets.all(16.w),
-      child: Row(
-        children: [
-          // Category Icon
-          SvgPicture.asset(
-            category.iconPath,
-          ),
+    return InkWell(
+      onTap: () async {
+        await Navigator.pushNamed(context, AppRoutes.transactionDetails,
+            arguments: transaction);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.baseLight80,
+          borderRadius: BorderRadius.circular(24.r),
+        ),
+        margin: EdgeInsets.symmetric(vertical: 4.h),
+        padding: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            // Category Icon
+            SvgPicture.asset(
+              category.iconPath,
+            ),
 
-          SizedBox(width: 16.w),
+            SizedBox(width: 16.w),
 
-          // Title and Description
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Title and Description
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.title,
+                    style: AppTextStyles.body3.copyWith(
+                      color: AppColors.baseDark50,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      AdaptiveLabel(
+                          backgroundColor: AppColors.violet100,
+                          iconData: Icons.label_important_outlined,
+                          title: transaction.label),
+                      SizedBox(
+                        width: 4.w,
+                      ),
+                      AdaptiveLabel(
+                          backgroundColor: AppColors.green100,
+                          iconData: Icons.label_important_outlined,
+                          title: transaction.category),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Amount and Time
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  transaction.title,
+                  '${transactionType == TransactionType.expense ? '-' : transactionType == TransactionType.income ? '+' : ''} ${AppFunctions().formatRupees(transaction.amount)}',
                   style: AppTextStyles.body3.copyWith(
-                    color: AppColors.baseDark50,
+                    color: transactionType.color,
                     fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  transaction.description ?? '',
+                  formattedTime,
                   style: AppTextStyles.body3.copyWith(
                     color: AppColors.baseLight20,
                     fontSize: 13.sp,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-          ),
-
-          // Amount and Time
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${transactionType == TransactionType.expense ? '-' : transactionType == TransactionType.income ? '+' : ''} ${AppFunctions().formatRupees(transaction.amount)}',
-                style: AppTextStyles.body3.copyWith(
-                  color: transactionType.color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16.sp,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                formattedTime,
-                style: AppTextStyles.body3.copyWith(
-                  color: AppColors.baseLight20,
-                  fontSize: 13.sp,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

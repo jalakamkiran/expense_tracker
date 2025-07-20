@@ -12,4 +12,25 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
   Stream<List<Transaction>> watchAllTransactions() => select(transactions).watch();
   Future insertTransaction(Insertable<Transaction> txn) => into(transactions).insert(txn);
   Future deleteTransaction(int id) => (delete(transactions)..where((t) => t.id.equals(id))).go();
+
+
+  Future<List<Transaction>> getTransactionsByMonth(int? month) async {
+    final query = select(transactions);
+
+    if (month != null) {
+      final now = DateTime.now();
+      final year = now.year;
+
+      final start = DateTime(year, month, 1);
+      final end = (month < 12)
+          ? DateTime(year, month + 1, 1).subtract(const Duration(days: 1))
+          : DateTime(year + 1, 1, 1).subtract(const Duration(days: 1));
+
+      query.where((tbl) =>
+          tbl.date.isBetweenValues(start, end));
+    }
+
+    return query.get();
+  }
+
 }

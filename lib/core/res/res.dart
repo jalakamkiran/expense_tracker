@@ -25,5 +25,6 @@ class Res {
   static const String transactionSelected = 'assets/images/svg/bottom_navigation_bar/transaction_selected.svg';
 
   static const String filter = 'assets/images/svg/transactions/filter.svg';
+  static const String trash = 'assets/images/svg/transactions/trash.svg';
 
 }

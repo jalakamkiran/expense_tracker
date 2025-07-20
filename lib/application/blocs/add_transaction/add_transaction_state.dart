@@ -4,7 +4,8 @@ import 'package:file_picker/file_picker.dart';
 
 class AddTransactionAddState extends Equatable {
   final double amount;
-  final String? category;
+  final String category;
+  final String? label;
   final String description;
   final bool repeat;
   final PlatformFile? attachment;
@@ -15,6 +16,9 @@ class AddTransactionAddState extends Equatable {
   final String? fromWallet;
   final String? toWallet;
   final DateTime date;
+  final List<String> availableCategories;
+  final List<String> availableLabels;
+
 
   AddTransactionAddState({
     required this.amount,
@@ -22,6 +26,7 @@ class AddTransactionAddState extends Equatable {
     required this.description,
     required this.repeat,
     required this.type,
+    this.label = "",
     required this.date,
     this.attachment,
     this.isSubmitting = false,
@@ -29,12 +34,15 @@ class AddTransactionAddState extends Equatable {
     this.errorMessage,
     this.fromWallet,
     this.toWallet,
+    this.availableCategories = const [],
+    this.availableLabels = const [],
   });
 
   factory AddTransactionAddState.initial() => AddTransactionAddState(
     amount: 0.0,
-    category: null,
+    category: '',
     description: '',
+    label: '',
     repeat: false,
     type: TransactionType.expense,
     date: DateTime.now(),
@@ -53,8 +61,11 @@ class AddTransactionAddState extends Equatable {
     String? errorMessage,
     TransactionType? type,
     String? fromWallet,
+    String? label,
     String? toWallet,
     DateTime? date,
+    List<String>? availableCategories,
+    List<String>? availableLabels,
   }) {
     return AddTransactionAddState(
       amount: amount ?? this.amount,
@@ -63,8 +74,11 @@ class AddTransactionAddState extends Equatable {
       toWallet: toWallet ?? this.toWallet,
       description: description ?? this.description,
       repeat: repeat ?? this.repeat,
+      availableCategories: availableCategories ?? this.availableCategories,
       type: type ?? this.type,
       date: date ?? this.date,
+      label: label ?? this.label,
+      availableLabels: availableLabels ?? this.availableLabels,
       attachment: attachmentHasChanged ? attachment : this.attachment,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isSuccess: isSuccess ?? this.isSuccess,
@@ -85,5 +99,9 @@ class AddTransactionAddState extends Equatable {
     fromWallet,
     toWallet,
     date,
+    label,
+    availableCategories,
+    type,
+    availableLabels
   ];
 }
