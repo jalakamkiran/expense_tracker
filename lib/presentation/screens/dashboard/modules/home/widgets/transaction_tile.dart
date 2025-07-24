@@ -55,7 +55,7 @@ class TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.title,
+                  transaction.category,
                   style: AppTextStyles.body3.copyWith(
                     color: AppColors.baseDark50,
                     fontWeight: FontWeight.w600,
