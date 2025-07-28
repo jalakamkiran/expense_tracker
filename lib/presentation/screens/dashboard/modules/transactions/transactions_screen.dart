@@ -46,6 +46,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     });
   }
 
+
+
   @override
   Widget build(BuildContext transactionContext) {
     return WillPopScope(
@@ -89,6 +91,33 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   ),
                 ),
 
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.receipt_long,
+                    color: AppColors.violet100,
+                    size: 24.sp,
+                  ),
+                  onSelected: (value) {
+                    final state = transactionContext.read<TransactionListBloc>().state;
+                    if (state is TransactionListLoaded) {
+                      final allTxns = state.groupedTransactions.values.expand((e) => e).toList();
+                      ScaffoldMessenger.of(transactionContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Building receipt for ${allTxns.length} transactions',
+                          ),
+                        ),
+                      );
+                      AppFunctions().shareReceipt(allTxns);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'share_selected', child: Text('Share Selected')),
+                    const PopupMenuItem(value: 'share_all', child: Text('Share All')),
+                  ],
+                ),
+
+
                 SizedBox(width: 8.w),
                 InkWell(
                   onTap: () async {
@@ -100,6 +129,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ],
             ),
           ),
+
+
           Expanded(
             child: BlocBuilder<TransactionListBloc, TransactionListState>(
               builder: (context, state) {
@@ -108,6 +139,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is TransactionListLoaded) {
                   final grouped = state.groupedTransactions;
+
+                  final totalIncome = state.totalIncome;
+                  final totalExpense = state.totalExpense;
+                  final totalAmount = state.totalAmount;
+
+                  final net = totalIncome - totalExpense;
+                  final isProfit = net >= 0;
 
                   // Handle empty state with pull-to-refresh
                   if (grouped.isEmpty) {
@@ -137,35 +175,37 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           .read<TransactionListBloc>()
                           .add(ResetTransactions(month: _selectedMonth));
                     },
-                    child: ListView.separated(
+                    child: ListView.builder(
                       controller: _controller,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.only(
-                          top: 0, left: 16.w, right: 16.w, bottom: 16.h),
-                      itemCount: grouped.length + (state.hasMore ? 1 : 0),
-                      separatorBuilder: (_, __) => SizedBox(height: 24.h),
+                      padding: EdgeInsets.only(top: 0, left: 16.w, right: 16.w, bottom: 16.h),
+                      itemCount: grouped.length + 1 + (state.hasMore ? 1 : 0),
                       itemBuilder: (context, index) {
-                        if (index == grouped.length) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                        if (index == 0) {
+                          return _buildSummaryCard(state);
                         }
 
-                        final date = grouped.keys.elementAt(index);
+                        final adjustedIndex = index - 1;
+
+                        if (adjustedIndex == grouped.length) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        final date = grouped.keys.elementAt(adjustedIndex);
                         final txns = grouped[date]!;
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(date,
-                                style: AppTextStyles.title3
-                                    .copyWith(color: AppColors.baseDark100)),
+                                style: AppTextStyles.title3.copyWith(color: AppColors.baseDark100)),
                             SizedBox(height: 8.h),
-                            ...txns
-                                .map((txn) => TransactionTile(transaction: txn))
+                            ...txns.map((txn) => TransactionTile(transaction: txn))
                           ],
                         );
                       },
-                    ),
+                    )
+                    ,
                   );
                 } else if (state is TransactionListError) {
                   return RefreshIndicator(
@@ -194,6 +234,48 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
     );
   }
+
+  Widget _buildSummaryCard(TransactionListLoaded state) {
+    final totalIncome = state.totalIncome;
+    final totalExpense = state.totalExpense;
+    final net = totalIncome - totalExpense;
+    final isProfit = net >= 0;
+
+     return Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.baseLight80,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: AppColors.baseDark25.withOpacity(0.3),width: 1.w),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Summary", style: AppTextStyles.title3),
+            SizedBox(height: 15.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSummaryItem("Income", totalIncome, AppColors.green100),
+                _buildSummaryItem("Expense", totalExpense, AppColors.red100),
+                _buildSummaryItem("Net", net, isProfit ? AppColors.green100 : AppColors.red100),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Future<void> _onFilterTapped(BuildContext transactionContext) async {
     final db = sl<AppDatabase>();
@@ -229,6 +311,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       );
     }
   }
+
+  Widget _buildSummaryItem(String title, double amount, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTextStyles.body2.copyWith(color: AppColors.baseDark100)),
+        SizedBox(height: 4.h),
+        Text(
+          '₹${amount.toStringAsFixed(2)}',
+          style: AppTextStyles.title3.copyWith(color: color),
+        ),
+      ],
+    );
+  }
+
 
   @override
   void dispose() {

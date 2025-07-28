@@ -91,6 +91,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/fonts/roboto/Roboto-Regular.ttf
+
+
     - assets/images/svg/arrow_left.svg
     - assets/images/svg/arrow_down.svg
     - assets/images/svg/attachment.svg

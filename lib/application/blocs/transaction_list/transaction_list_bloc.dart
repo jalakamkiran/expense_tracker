@@ -26,7 +26,9 @@ class TransactionListBloc
   }
 
   Future<void> _onLoad(
-      LoadTransactions event, Emitter<TransactionListState> emit) async {
+      LoadTransactions event,
+      Emitter<TransactionListState> emit,
+      ) async {
     try {
       final db = sl<AppDatabase>();
 
@@ -41,30 +43,47 @@ class TransactionListBloc
       );
 
       transactions.sort((a, b) => b.date.compareTo(a.date));
-
       final newGrouped = _groupByDay(transactions);
 
-      Map<String, List<Transaction>> prev = state is TransactionListLoaded
+      Map<String, List<Transaction>> prevGrouped =
+      state is TransactionListLoaded
           ? Map.from((state as TransactionListLoaded).groupedTransactions)
           : {};
 
       for (var key in newGrouped.keys) {
-        if (prev.containsKey(key)) {
-          prev[key]!.addAll(newGrouped[key]!);
+        if (prevGrouped.containsKey(key)) {
+          prevGrouped[key]!.addAll(newGrouped[key]!);
         } else {
-          prev[key] = newGrouped[key]!;
+          prevGrouped[key] = newGrouped[key]!;
         }
       }
 
+      // Flatten all transactions
+      final allTxns = prevGrouped.values.expand((list) => list).toList();
+
+      final totalIncome = allTxns
+          .where((t) => t.type.toLowerCase() == 'income')
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      final totalExpense = allTxns
+          .where((t) => t.type.toLowerCase() == 'expense')
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      final totalAmount = allTxns.fold(0.0, (sum, t) => sum + t.amount);
+
       emit(TransactionListLoaded(
-        groupedTransactions: prev,
+        groupedTransactions: prevGrouped,
         hasMore: transactions.length == _pageSize,
         offset: offset + transactions.length,
+        totalAmount: totalAmount,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
       ));
     } catch (e) {
       emit(TransactionListError(e.toString()));
     }
   }
+
 
   Map<String, List<Transaction>> _groupByDay(List<Transaction> txns) {
     final now = DateTime.now();
@@ -193,10 +212,23 @@ class TransactionListBloc
 
       final grouped = _groupByDay(filtered);
 
+      final totalIncome = filtered
+          .where((t) => t.type.toLowerCase() == 'income')
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      final totalExpense = filtered
+          .where((t) => t.type.toLowerCase() == 'expense')
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      final totalAmount = filtered.fold(0.0, (sum, t) => sum + t.amount);
+
       emit(TransactionListLoaded(
         groupedTransactions: grouped,
         hasMore: false,
         offset: filtered.length,
+        totalAmount: totalAmount,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
       ));
     } catch (e) {
       emit(TransactionListError("Filter failed: ${e.toString()}"));

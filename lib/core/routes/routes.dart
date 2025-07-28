@@ -40,7 +40,7 @@ class AppRoutes {
               BlocProvider(create: (_) => sl<BottomNavBloc>()),
               BlocProvider(create: (_) => sl<TransactionListBloc>()),
             ],
-            child: const LockScreen(child: DashboardScreen()),
+            child: DashboardScreen(),
           ),
         );
 
